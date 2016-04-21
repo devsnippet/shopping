@@ -1,7 +1,6 @@
 <?php
 namespace app\admin\controller;
 
-use \app\admin\validate\Role as Validate;
 use \think\Controller;
 
 class Login extends Controller
@@ -9,20 +8,24 @@ class Login extends Controller
     public function index()
     {
         header("Content-type:text/html;charset=utf-8");
-
         $data = [
-            'name'   => '网站管理1员',
-            'status' => 1,
-            'remark' => '网站管理员',
+            'name'       => 'Luffy Zhao',
+            'email'      => 'luffyzhao@vip.126.com',
+            'password'   => '123456',
+            'repassword' => '123456',
+            'sex'        => 0,
+            'birthday'   => '2016-04-05',
+            'role_id'    => 1,
+            'status'     => 0,
         ];
-        $role = model('Role');
+        $result = $this->validate($data, 'User.add');
 
-        $data = $role->validate('Role')->isUpdate(false)->save($data);
-
-        if (!$data) {
-            dump($role->getError());
+        if ($result === false) {
+            dump($result);
         }
-
-        // dump($data->status);
+        unset($data['repassword']);
+        $user  = new \app\admin\model\User();
+        $users = $user->get(2);
+        dump($users);
     }
 }

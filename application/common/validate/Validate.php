@@ -6,7 +6,7 @@ use \think\Db;
 trait Validate
 {
     /**
-     * [existRoleById description]
+     * 验证是否存在！
      * @author luffy<luffyzhao@vip.126.com>
      * @dateTime 2016-04-19T09:48:57+0800
      * @param    [type]                   $roleId [description]

@@ -627,6 +627,7 @@ class Validate
         if ($db->where($map)->field($key)->find()) {
             return false;
         }
+
         return true;
     }
 

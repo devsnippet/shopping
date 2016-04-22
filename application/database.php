@@ -16,7 +16,7 @@ return [
     // 数据库连接DSN配置
     'dsn'         => '',
     // 服务器地址
-    'hostname'    => '139.129.93.215',
+    'hostname'    => 'ooooooo',
     // 数据库名
     'database'    => 'shopping',
     // 数据库用户名

@@ -16,13 +16,13 @@ return [
     // 数据库连接DSN配置
     'dsn'         => '',
     // 服务器地址
-    'hostname'    => '127.0.0.1',
+    'hostname'    => '139.129.93.215',
     // 数据库名
     'database'    => 'shopping',
     // 数据库用户名
-    'username'    => 'root',
+    'username'    => 'luffyzhao',
     // 数据库密码
-    'password'    => '',
+    'password'    => '*D4345DFjjDDjioEOR',
     // 数据库连接端口
     'hostport'    => '3306',
     // 数据库连接参数

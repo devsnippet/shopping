@@ -14,39 +14,38 @@ namespace think;
 class View
 {
     // 视图实例
-    protected static $instance = null;
+    protected static $instance;
     // 模板引擎实例
-    public $engine = null;
+    public $engine;
     // 模板变量
     protected $data = [];
-    // 视图参数
-    protected $config = [
-        // 视图输出字符串替换
-        'parse_str'     => [],
-        // 视图驱动命名空间
-        'namespace'     => '\\think\\view\\driver\\',
-        'engine_type'   => 'think',
-        // 模板引擎配置参数
-        'engine_config' => [],
-    ];
+    // 视图输出替换
+    protected $replace = [];
 
-    public function __construct($config = [])
+    /**
+     * 架构函数
+     * @access public
+     * @param array $engine  模板引擎参数
+     * @param array $replace  字符串替换参数
+     */
+    public function __construct($engine = [], $replace = [])
     {
-        if (is_array($config)) {
-            $this->config($config);
-        }
+        // 初始化模板引擎
+        $this->engine((array) $engine);
+        $this->replace = $replace;
     }
 
     /**
      * 初始化视图
      * @access public
-     * @param array $config  配置参数
+     * @param array $engine  模板引擎参数
+     * @param array $replace  字符串替换参数
      * @return object
      */
-    public static function instance($config = [])
+    public static function instance($engine = [], $replace = [])
     {
         if (is_null(self::$instance)) {
-            self::$instance = new self($config);
+            self::$instance = new self($engine, $replace);
         }
         return self::$instance;
     }
@@ -70,40 +69,25 @@ class View
     }
 
     /**
-     * 设置视图参数
-     * @access public
-     * @param mixed $config 视图参数或者数组
-     * @param string $value 值
-     * @return mixed
-     */
-    public function config($config = '', $value = null)
-    {
-        if (is_array($config)) {
-            foreach ($this->config as $key => $val) {
-                if (isset($config[$key])) {
-                    $this->config[$key] = $config[$key];
-                }
-            }
-        } elseif (is_null($value)) {
-            // 获取配置参数
-            return $this->config[$config];
-        } else {
-            $this->config[$config] = $value;
-        }
-        return $this;
-    }
-
-    /**
      * 设置当前模板解析的引擎
      * @access public
-     * @param string $engine 引擎名称
-     * @param array $config 引擎参数
+     * @param array|string $options 引擎参数
      * @return $this
      */
-    public function engine($engine, array $config = [])
+    public function engine($options = [])
     {
-        $class        = $this->config['namespace'] . ucfirst($engine);
-        $this->engine = new $class($config);
+        if (is_string($options)) {
+            $type    = $options;
+            $options = [];
+        } else {
+            $type = !empty($options['type']) ? $options['type'] : 'Think';
+        }
+
+        $class = (!empty($options['namespace']) ? $options['namespace'] : '\\think\\view\\driver\\') . ucfirst($type);
+        if (isset($options['type'])) {
+            unset($options['type']);
+        }
+        $this->engine = new $class($options);
         return $this;
     }
 
@@ -120,10 +104,7 @@ class View
     {
         // 模板变量
         $vars = array_merge($this->data, $vars);
-        if (is_null($this->engine)) {
-            // 初始化模板引擎
-            $this->engine($this->config['engine_type'], $this->config['engine_config']);
-        }
+
         // 页面缓存
         ob_start();
         ob_implicit_flush(0);
@@ -137,15 +118,27 @@ class View
         // 内容过滤标签
         APP_HOOK && Hook::listen('view_filter', $content);
         // 允许用户自定义模板的字符串替换
-        if (!empty($this->config['parse_str'])) {
-            $replace = $this->config['parse_str'];
-            $content = str_replace(array_keys($replace), array_values($replace), $content);
-        }
-        if (!Config::get('response_auto_output')) {
-            // 自动响应输出
-            return Response::send($content, Response::type());
+        if (!empty($this->replace)) {
+            $content = strtr($content, $this->replace);
         }
         return $content;
+    }
+
+    /**
+     * 视图内容替换
+     * @access public
+     * @param string|array $content 被替换内容（支持批量替换）
+     * @param string  $replace    替换内容
+     * @return $this
+     */
+    public function replace($content, $replace = '')
+    {
+        if (is_array($content)) {
+            $this->replace = array_merge($this->replace, $content);
+        } else {
+            $this->replace[$content] = $replace;
+        }
+        return $this;
     }
 
     /**

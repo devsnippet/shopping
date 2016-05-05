@@ -20,7 +20,7 @@ use think\db\Connection;
 class Sqlsrv extends Connection
 {
     // PDO连接参数
-    protected $options = [
+    protected $params = [
         PDO::ATTR_CASE              => PDO::CASE_LOWER,
         PDO::ATTR_ERRMODE           => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_STRINGIFY_FETCHES => false,
@@ -29,7 +29,7 @@ class Sqlsrv extends Connection
 
     /**
      * 解析pdo连接的dsn信息
-     * @access public
+     * @access protected
      * @param array $config 连接信息
      * @return string
      */
@@ -72,7 +72,7 @@ class Sqlsrv extends Connection
                 ];
             }
         }
-        return $info;
+        return $this->fieldCase($info);
     }
 
     /**

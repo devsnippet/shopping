@@ -20,12 +20,11 @@ class Login extends Controller
         ];
         $result = $this->validate($data, 'User.add');
 
-        if ($result === false) {
-            dump($result);
-        }
+        // if ($result === false) {
+        dump($result);
+        // }
         unset($data['repassword']);
-        $user  = new \app\admin\model\User();
-        $users = $user->get(2);
+        $users = \app\admin\model\User::get(2);
         dump($users);
     }
 }

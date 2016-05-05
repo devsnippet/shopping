@@ -17,8 +17,9 @@ use think\Exception;
 
 abstract class Builder
 {
-    // db对象实例
+    // connection对象实例
     protected $connection;
+    // 查询对象实例
     protected $query;
 
     // 查询参数
@@ -26,7 +27,8 @@ abstract class Builder
 
     // 数据库表达式
     protected $exp = ['eq' => '=', 'neq' => '<>', 'gt' => '>', 'egt' => '>=', 'lt' => '<', 'elt' => '<=', 'notlike' => 'NOT LIKE', 'like' => 'LIKE', 'in' => 'IN', 'exp' => 'EXP', 'notin' => 'NOT IN', 'not in' => 'NOT IN', 'between' => 'BETWEEN', 'not between' => 'NOT BETWEEN', 'notbetween' => 'NOT BETWEEN', 'exists' => 'EXISTS', 'notexists' => 'NOT EXISTS', 'not exists' => 'NOT EXISTS', 'null' => 'NULL', 'notnull' => 'NOT NULL', 'not null' => 'NOT NULL'];
-    // 查询表达式
+
+    // SQL表达式
     protected $selectSql    = 'SELECT%DISTINCT% %FIELD% FROM %TABLE%%FORCE%%JOIN%%WHERE%%GROUP%%HAVING%%ORDER%%LIMIT% %UNION%%LOCK%%COMMENT%';
     protected $insertSql    = '%INSERT% INTO %TABLE% (%FIELD%) VALUES (%DATA%) %COMMENT%';
     protected $insertAllSql = 'INSERT INTO %TABLE% (%FIELD%) %DATA% %COMMENT%';
@@ -36,7 +38,7 @@ abstract class Builder
     /**
      * 架构函数
      * @access public
-     * @param object $db 数据库对象实例
+     * @param \think\db\Connection $connection 数据库连接对象实例
      */
     public function __construct($connection)
     {
@@ -79,7 +81,7 @@ abstract class Builder
         }
 
         // 获取绑定信息
-        $bind = $this->connection->getTableInfo($options['table'], 'bind');
+        $bind = $this->query->getTableInfo($options['table'], 'bind');
         if ('*' == $options['field']) {
             $fields = array_keys($bind);
         } else {
@@ -89,7 +91,7 @@ abstract class Builder
         $result = [];
         foreach ($data as $key => $val) {
             if (!in_array($key, $fields, true)) {
-                if ($this->connection->getAttribute('fields_strict')) {
+                if ($options['strict']) {
                     throw new Exception(' fields not exists :[' . $key . ']');
                 }
             } else {
@@ -100,8 +102,12 @@ abstract class Builder
                     $result[$item] = 'NULL';
                 } elseif (is_scalar($val)) {
                     // 过滤非标量数据
-                    $this->query->bind($key, $val, isset($bind[$key]) ? $bind[$key] : PDO::PARAM_STR);
-                    $result[$item] = ':' . $key;
+                    if ($this->query->isBind(substr($val, 1))) {
+                        $result[$item] = $val;
+                    } else {
+                        $this->query->bind($key, $val, isset($bind[$key]) ? $bind[$key] : PDO::PARAM_STR);
+                        $result[$item] = ':' . $key;
+                    }
                 }
             }
         }
@@ -219,12 +225,12 @@ abstract class Builder
 
         $whereStr = '';
         // 获取字段信息
-        $fields = $this->connection->getTableInfo($table, 'fields');
-        $binds  = $this->connection->getTableInfo($table, 'bind');
+        $fields = $this->query->getTableInfo($table, 'fields');
+        $binds  = $this->query->getTableInfo($table, 'bind');
         foreach ($where as $key => $val) {
             $str = [];
             foreach ($val as $field => $value) {
-                if (in_array($field, $fields, true) && is_scalar($value) && !$this->query->isBind($field)) {
+                if ($fields && in_array($field, $fields, true) && is_scalar($value) && !$this->query->isBind($field)) {
                     $this->query->bind($field, $value, isset($binds[$field]) ? $binds[$field] : PDO::PARAM_STR);
                     $value = ':' . $field;
                 }
@@ -278,8 +284,15 @@ abstract class Builder
 
         // 对一个字段使用多个查询条件
         if (is_array($exp)) {
+            $item = array_pop($val);
+            // 传入 or 或者 and
+            if (is_string($item) && in_array($item, ['AND', 'and', 'OR', 'or'])) {
+                $rule = $item;
+            } else {
+                array_push($val, $item);
+            }
             foreach ($val as $item) {
-                $str[] = $this->parseWhereItem($key, $item);
+                $str[] = $this->parseWhereItem($key, $item, $rule);
             }
             return '( ' . implode(' ' . $rule . ' ', $str) . ' )';
         }
@@ -300,7 +313,7 @@ abstract class Builder
             $whereStr .= $key . ' ' . $exp . ' ' . $this->parseValue($value);
         } elseif ('EXP' == $exp) {
             // 表达式查询
-            $whereStr .= $key . ' ' . $value;
+            $whereStr .= '( ' . $key . ' ' . $value . ' )';
         } elseif (in_array($exp, ['NOT NULL', 'NULL'])) {
             // NULL 查询
             $whereStr .= $key . ' IS ' . $exp;
@@ -490,14 +503,6 @@ abstract class Builder
      */
     public function select($options = [])
     {
-        if (isset($options['page'])) {
-            // 根据页数计算limit
-            list($page, $listRows) = $options['page'];
-            $page                  = $page > 0 ? $page : 1;
-            $listRows              = $listRows > 0 ? $listRows : (is_numeric($options['limit']) ? $options['limit'] : 20);
-            $offset                = $listRows * ($page - 1);
-            $options['limit']      = $offset . ',' . $listRows;
-        }
         $sql = str_replace(
             ['%TABLE%', '%DISTINCT%', '%FIELD%', '%JOIN%', '%WHERE%', '%GROUP%', '%HAVING%', '%ORDER%', '%LIMIT%', '%UNION%', '%LOCK%', '%COMMENT%', '%FORCE%'],
             [
@@ -560,7 +565,7 @@ abstract class Builder
     {
         // 获取合法的字段
         if ('*' == $options['field']) {
-            $fields = $this->connection->getTableInfo($options['table'], 'fields');
+            $fields = $this->query->getTableInfo($options['table'], 'fields');
         } else {
             $fields = is_array($options['field']) ? $options['field'] : explode(',', $options['field']);
         }
@@ -568,7 +573,7 @@ abstract class Builder
         foreach ($dataSet as &$data) {
             foreach ($data as $key => $val) {
                 if (!in_array($key, $fields, true)) {
-                    if ($this->connection->getAttribute('fields_strict')) {
+                    if ($options['strict']) {
                         throw new Exception(' fields not exists :[' . $key . ']');
                     }
                     unset($data[$key]);

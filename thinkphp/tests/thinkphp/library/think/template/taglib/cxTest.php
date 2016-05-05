@@ -60,7 +60,7 @@ EOF;
 {/volist}
 EOF;
 
-        $template->fetch($content, ['list' => [1, 2, 3, 4, 5]]);
+        $template->display($content, ['list' => [1, 2, 3, 4, 5]]);
         $this->expectOutputString('234');
     }
 
@@ -100,7 +100,7 @@ EOF;
 {\$val}
 {/foreach}
 EOF;
-        $template->fetch($content);
+        $template->display($content);
         $this->expectOutputString('234');
     }
 
@@ -342,7 +342,7 @@ EOF;
 {between name=":floor(5.1)" value="1,5"}yes{/between}
 {notbetween name=":ceil(5.1)" value="1,5"}no{/notbetween}
 EOF;
-        $template->fetch($content);
+        $template->display($content);
         $this->expectOutputString('yesno');
     }
 
@@ -451,7 +451,7 @@ EOF;
 {import file="base?ver=1.0" value="\$name.a" /}
 EOF;
         $data = <<<EOF
-<?php if(isset(\$name['a'])): ?><script type="text/javascript" src="/Public/base.js?ver=1.0"></script><?php endif; ?>
+<?php if(isset(\$name['a'])): ?><script type="text/javascript" src="/public/base.js?ver=1.0"></script><?php endif; ?>
 EOF;
         $cx->parseTag($content);
         $this->assertEquals($content, $data);
@@ -460,7 +460,7 @@ EOF;
 {import file="base" type="css" /}
 EOF;
         $data = <<<EOF
-<link rel="stylesheet" type="text/css" href="/Public/base.css" />
+<link rel="stylesheet" type="text/css" href="/public/base.css" />
 EOF;
         $cx->parseTag($content);
         $this->assertEquals($content, $data);
@@ -559,17 +559,17 @@ EOF;
 {\$i}
 {/for}
 EOF;
-        $template->fetch($content);
+        $template->display($content);
         $this->expectOutputString('123456789');
     }
 
     public function testFunction()
     {
         $template = new template();
-        $data = [
+        $data     = [
             'list' => ['language' => 'php', 'version' => ['5.4', '5.5']],
-            'a' => '[',
-            'b' => ']',
+            'a'    => '[',
+            'b'    => ']',
         ];
 
         $content = <<<EOF
@@ -587,7 +587,7 @@ EOF;
 {/foreach}
 {/function}
 EOF;
-        $template->fetch($content, $data);
+        $template->display($content, $data);
         $this->expectOutputString("language:php,[5.4][5.5]");
     }
 }

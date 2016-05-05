@@ -35,7 +35,7 @@ class Controller
      */
     public function __construct()
     {
-        $this->view = View::instance(Config::get('view'));
+        $this->view = View::instance(Config::get('template'), Config::get('view_replace_str'));
 
         // 控制器初始化
         if (method_exists($this, '_initialize')) {
@@ -97,14 +97,14 @@ class Controller
     /**
      * 渲染内容输出
      * @access public
-     * @param string $template 模板文件名
+     * @param string $content 模板内容
      * @param array  $vars     模板输出变量
      * @param array $config     模板参数
      * @return mixed
      */
-    public function display($template = '', $vars = [], $config = [])
+    public function display($content = '', $vars = [], $config = [])
     {
-        return $this->view->display($template, $vars, $config);
+        return $this->view->display($content, $vars, $config);
     }
 
     /**
@@ -122,13 +122,12 @@ class Controller
     /**
      * 初始化模板引擎
      * @access protected
-     * @param string $engine 引擎名称
-     * @param array $config 引擎参数
+     * @param array|string $engine 引擎参数
      * @return void
      */
-    public function engine($engine, $config = [])
+    public function engine($engine)
     {
-        $this->view->engine($engine, $config);
+        $this->view->engine($engine);
     }
 
     /**
@@ -138,7 +137,7 @@ class Controller
      * @param string|array $validate 验证器名或者验证规则数组
      * @param array $message 提示信息
      * @param mixed $callback 回调方法（闭包）
-     * @return void
+     * @return true|string|array
      */
     public function validate($data, $validate, $message = [], $callback = null)
     {

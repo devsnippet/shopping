@@ -130,7 +130,7 @@ class Route
                     }
                     if (0 === strpos($key, '[')) {
                         if (empty($val)) {
-                            break;
+                            continue;
                         }
                         $key    = substr($key, 1, -1);
                         $result = ['routes' => $val, 'option' => $option, 'pattern' => $pattern];
@@ -515,7 +515,7 @@ class Route
         if ($len1 >= $len2 || strpos($rule, '[')) {
             if ('$' == substr($rule, -1, 1)) {
                 // 完整匹配
-                if ($len1 != $len2) {
+                if ($len1 != $len2 && false === strpos($rule, '[')) {
                     return false;
                 } else {
                     $rule = substr($rule, 0, -1);

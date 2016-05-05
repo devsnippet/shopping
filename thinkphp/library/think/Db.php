@@ -18,8 +18,6 @@ class Db
 {
     //  数据库连接实例
     private static $instances = [];
-    //  当前数据库连接实例
-    private static $instance = null;
     // 查询次数
     public static $queryTimes = 0;
     // 执行次数
@@ -30,24 +28,30 @@ class Db
      * @static
      * @access public
      * @param mixed $config 连接配置
-     * @return Object 返回数据库驱动类
+     * @param bool|string $name 连接标识 true 强制重新连接
+     * @return \think\db\Connection
      */
-    public static function connect($config = [])
+    public static function connect($config = [], $name = false)
     {
-        $md5 = md5(serialize($config));
-        if (!isset(self::$instances[$md5])) {
+        if (false === $name) {
+            $name = md5(serialize($config));
+        }
+        if (true === $name || !isset(self::$instances[$name])) {
             // 解析连接参数 支持数组和字符串
             $options = self::parseConfig($config);
             if (empty($options['type'])) {
                 throw new Exception('db type error');
             }
-            $class                 = (!empty($options['namespace']) ? $options['namespace'] : '\\think\\db\\connector\\') . ucwords($options['type']);
-            self::$instances[$md5] = new $class($options);
+            $class = (!empty($options['namespace']) ? $options['namespace'] : '\\think\\db\\connector\\') . ucwords($options['type']);
             // 记录初始化信息
             APP_DEBUG && Log::record('[ DB ] INIT ' . $options['type'] . ':' . var_export($options, true), 'info');
+            if (true === $name) {
+                return new $class($options);
+            } else {
+                self::$instances[$name] = new $class($options);
+            }
         }
-        self::$instance = self::$instances[$md5];
-        return self::$instance;
+        return self::$instances[$name];
     }
 
     /**
@@ -107,10 +111,7 @@ class Db
     // 调用驱动类的方法
     public static function __callStatic($method, $params)
     {
-        if (is_null(self::$instance)) {
-            // 自动初始化数据库
-            self::connect();
-        }
-        return call_user_func_array([self::$instance, $method], $params);
+        // 自动初始化数据库
+        return call_user_func_array([self::connect(), $method], $params);
     }
 }

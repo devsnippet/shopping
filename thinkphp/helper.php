@@ -28,13 +28,55 @@ use think\Url;
 use think\View;
 
 /**
+ * 快速导入Traits PHP5.5以上无需调用
+ * @param string $class trait库
+ * @param string $ext 类库后缀
+ * @return boolean
+ */
+function load_trait($class, $ext = EXT)
+{
+    return Loader::import($class, TRAIT_PATH, $ext);
+}
+
+/**
+ * 抛出异常处理
+ *
+ * @param string  $msg  异常消息
+ * @param integer $code 异常代码 默认为0
+ * @param string $exception 异常类
+ *
+ * @throws Exception
+ */
+function exception($msg, $code = 0, $exception = '')
+{
+    $e = $exception ?: '\think\Exception';
+    throw new $e($msg, $code);
+}
+
+/**
+ * 记录时间（微秒）和内存使用情况
+ * @param string $start 开始标签
+ * @param string $end 结束标签
+ * @param integer|string $dec 小数位 如果是m 表示统计内存占用
+ * @return mixed
+ */
+function debug($start, $end = '', $dec = 6)
+{
+    if ('' == $end) {
+        Debug::remark($start);
+    } else {
+        return 'm' == $dec ? Debug::getRangeMem($start, $end) : Debug::getRangeTime($start, $end, $dec);
+    }
+}
+
+/**
  * 获取语言变量值
  * @param string $name 语言变量名
  * @param array $vars 动态变量值
  * @param string $lang 语言
  * @return mixed
  */
-function L($name, $vars = [], $lang = '')
+function lang($name, $vars = [], $lang = '')
 {
     return Lang::get($name, $vars, $lang);
 }
@@ -46,7 +88,7 @@ function L($name, $vars = [], $lang = '')
  * @param string $range 作用域
  * @return mixed
  */
-function C($name = '', $value = null, $range = '')
+function config($name = '', $value = null, $range = '')
 {
     if (is_null($value) && is_string($name)) {
         return Config::get($name, $range);
@@ -63,7 +105,7 @@ function C($name = '', $value = null, $range = '')
  * @param bool $merge 是否合并系统默认过滤方法
  * @return mixed
  */
-function I($key, $default = null, $filter = null, $merge = false)
+function input($key, $default = null, $filter = null, $merge = false)
 {
     if (0 === strpos($key, '?')) {
         $key = substr($key, 1);
@@ -87,54 +129,12 @@ function I($key, $default = null, $filter = null, $merge = false)
 }
 
 /**
- * 记录时间（微秒）和内存使用情况
- * @param string $start 开始标签
- * @param string $end 结束标签
- * @param integer|string $dec 小数位 如果是m 表示统计内存占用
- * @return mixed
- */
-function G($start, $end = '', $dec = 6)
-{
-    if ('' == $end) {
-        Debug::remark($start);
-    } else {
-        return 'm' == $dec ? Debug::getRangeMem($start, $end) : Debug::getRangeTime($start, $end, $dec);
-    }
-}
-
-/**
- * 快速导入Traits PHP5.5以上无需调用
- * @param string $class trait库
- * @param string $ext 类库后缀
- * @return boolean
- */
-function T($class, $ext = EXT)
-{
-    return Loader::import($class, TRAIT_PATH, $ext);
-}
-
-/**
- * 抛出异常处理
- *
- * @param string  $msg  异常消息
- * @param integer $code 异常代码 默认为0
- * @param string $exception 异常类
- *
- * @throws Exception
- */
-function E($msg, $code = 0, $exception = '')
-{
-    $e = $exception ?: '\think\Exception';
-    throw new $e($msg, $code);
-}
-
-/**
  * 渲染输出Widget
  * @param string $name Widget名称
  * @param array $data 传人的参数
  * @return mixed
  */
-function W($name, $data = [])
+function widget($name, $data = [])
 {
     return Loader::action($name, $data, 'widget');
 }
@@ -152,12 +152,13 @@ function model($name = '', $layer = MODEL_LAYER)
 
 /**
  * 实例化数据库类
- * @param array $config 数据库配置参数
+ * @param string $name 操作的数据表名称（不含前缀）
+ * @param array|string $config 数据库配置参数
  * @return \think\db\Connection
  */
-function db($config = [])
+function db($name = '', $config = [])
 {
-    return Db::connect($config);
+    return Db::connect($config)->name($name);
 }
 
 /**
@@ -250,10 +251,10 @@ function session($name, $value = '', $prefix = null)
         // 判断或获取
         return 0 === strpos($name, '?') ? Session::has(substr($name, 1), $prefix) : Session::get($name, $prefix);
     } elseif (is_null($value)) {
-        // 删除session
+        // 删除
         return Session::delete($name, $prefix);
     } else {
-        // 设置session
+        // 设置
         return Session::set($name, $value, $prefix);
     }
 }
@@ -277,10 +278,10 @@ function cookie($name, $value = '', $option = null)
         // 获取
         return Cookie::get($name);
     } elseif (is_null($value)) {
-        // 删除session
+        // 删除
         return Cookie::delete($name);
     } else {
-        // 设置session
+        // 设置
         return Cookie::set($name, $value, $option);
     }
 }
@@ -341,7 +342,7 @@ function trace($log = '[think]', $level = 'log')
  */
 function view($template = '', $vars = [])
 {
-    return View::instance(Config::get('view'))->fetch($template, $vars);
+    return View::instance(Config::get('template'), Config::get('view_replace_str'))->fetch($template, $vars);
 }
 
 /**

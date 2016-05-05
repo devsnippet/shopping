@@ -10,37 +10,50 @@
 // +----------------------------------------------------------------------
 
 /**
- * File缓存驱动测试
- * @author    刘志淳 <chun@engineer.com>
+ * Redisd缓存驱动测试
+ * @author 尘缘 <130775@qq.com>
  */
 
 namespace tests\thinkphp\library\think\cache\driver;
 
-class fileTest extends cacheTestCase
+class redisdTest extends cacheTestCase
 {
     private $_cacheInstance = null;
 
-    /**
-     * 基境缓存类型
-     */
     protected function setUp()
     {
-        \think\Cache::connect(['type' => 'File', 'path' => CACHE_PATH]);
+        if (!extension_loaded("redis")) {
+            $this->markTestSkipped("Redis没有安装，已跳过测试！");
+        }
+        \think\Cache::connect(array('type' => 'redis', 'expire' => 2));
     }
 
-    /**
-     * @return FileCache
-     */
     protected function getCacheInstance()
     {
         if (null === $this->_cacheInstance) {
-            $this->_cacheInstance = new \think\cache\driver\File();
+            $this->_cacheInstance = new \think\cache\driver\Redisd(['length' => 3]);
         }
         return $this->_cacheInstance;
     }
 
-    // skip testExpire
+    public function testGet()
+    {
+        $cache = $this->prepare();
+        $this->assertEquals('string_test', $cache->get('string_test'));
+        $this->assertEquals(11, $cache->get('number_test'));
+        $result =  $cache->get('array_test');
+        $this->assertEquals('array_test', $result['array_test']);
+    }
+
+    public function testStoreSpecialValues()
+    {
+    }
+
     public function testExpire()
+    {
+    }
+    
+    public function testQueue()
     {
     }
 }

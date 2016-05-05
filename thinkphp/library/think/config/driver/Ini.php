@@ -11,7 +11,7 @@
 
 namespace think\config\driver;
 
-class Ini
+class Ini implements ConfigInterface
 {
     public function parse($config)
     {

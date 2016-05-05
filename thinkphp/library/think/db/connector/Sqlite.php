@@ -21,7 +21,7 @@ class Sqlite extends Connection
 
     /**
      * 解析pdo连接的dsn信息
-     * @access public
+     * @access protected
      * @param array $config 连接信息
      * @return string
      */
@@ -55,7 +55,7 @@ class Sqlite extends Connection
                 ];
             }
         }
-        return $info;
+        return $this->fieldCase($info);
     }
 
     /**

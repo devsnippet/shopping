@@ -35,5 +35,6 @@ class User extends Validate
         'edit'         => ['role_id', 'status', 'sex', 'birthday'],
         'editpassword' => ['password', 'repassword'],
         'editstatus'   => ['status'],
+        'login'        => ['email', 'password'],
     ];
 }

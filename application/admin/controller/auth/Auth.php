@@ -13,7 +13,7 @@ trait Auth
     {
         $userId = Session::set('user.id');
         if ($userId == false) {
-            $this->redirect('login/index');
+            $this->redirect('main/login');
         }
     }
 }

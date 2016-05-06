@@ -24,6 +24,7 @@ class Main extends Base
      */
     public function doLogin()
     {
+
         if (!IS_POST) {
             return $this->login();
         }
@@ -34,7 +35,7 @@ class Main extends Base
         $result   = $validate->scene('login')->batch()->check($data);
 
         if ($result === false) {
-            return $this->iframeReturn($validate->getError());
+            return ['status' => 0, 'data' => $validate->getError()];
         }
 
     }

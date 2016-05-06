@@ -3,3 +3,4 @@ composer.lock
 *.log
 database.php
 runtime/*
+/thinkphp/*

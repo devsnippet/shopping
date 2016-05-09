@@ -82,6 +82,10 @@ $.extend({
         $.buttonEnable();
     },
 
+    _validateField: function (field) {
+         /* body... */ 
+    }
+
 });
 
 

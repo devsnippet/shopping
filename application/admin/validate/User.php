@@ -8,14 +8,15 @@ class User extends Validate
     use \app\common\validate\Validate;
 
     protected $rule = [
-        'name'       => ['require', 'unique:user', 'length:3,25'],
-        'email'      => ['require', 'email', 'unique:user'],
-        'password'   => ['require', 'length:6,20'],
-        'repassword' => ['require', 'confirm:password'],
-        'sex'        => ['in:0,1,2'],
-        'birthday'   => ['dateFormat:y-m-d'],
-        'role_id'    => ['exist:role,id'],
-        'status'     => ['in:0,1'],
+        'name'        => ['require', 'unique:user', 'length:3,25'],
+        'email'       => ['require', 'email', 'unique:user'],
+        'email_login' => ['require', 'email'],
+        'password'    => ['require', 'length:6,20'],
+        'repassword'  => ['require', 'confirm:password'],
+        'sex'         => ['in:0,1,2'],
+        'birthday'    => ['dateFormat:y-m-d'],
+        'role_id'     => ['exist:role,id'],
+        'status'      => ['in:0,1'],
     ];
 
     protected $message = [
@@ -35,6 +36,6 @@ class User extends Validate
         'edit'         => ['role_id', 'status', 'sex', 'birthday'],
         'editpassword' => ['password', 'repassword'],
         'editstatus'   => ['status'],
-        'login'        => ['email', 'password'],
+        'login'        => ['email_login', 'password'],
     ];
 }

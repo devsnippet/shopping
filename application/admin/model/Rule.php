@@ -20,10 +20,10 @@ class Rule extends Model
      * @param    string                   $value [description]
      * @return   [type]                          [description]
      */
-    public function getIslinkAttr($islink)
+    public function getIslinkTextAttr($islink, $data)
     {
         $islinks = [0 => '操作', 1 => '菜单'];
-        return $islinks[$islink];
+        return $islinks[$data['islink']];
     }
 
 }

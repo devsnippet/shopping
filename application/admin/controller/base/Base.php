@@ -11,5 +11,11 @@ class Base extends Controller
         if (IS_AJAX) {
             Config::set('default_return_type', 'json');
         }
+
+        // 控制器初始化
+        if (method_exists($this, '_initAuth')) {
+            $this->_initAuth();
+        }
+
     }
 }

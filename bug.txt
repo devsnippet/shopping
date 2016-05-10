@@ -1,0 +1,37 @@
+<?php
+
+
+
+// 在 role 模型里多对多关联 rule 表  中间表是 role_role
+
+/**
+* 关联rule表
+* @author luffy<luffyzhao@vip.126.com>
+* @dateTime 2016-04-21T16:27:30+0800
+* @return   [type]                   [description]
+*/
+public function rules()
+{
+    return $this->belongsToMany('Rule', 'role_rule');
+}
+// 调用代码
+$this->get(1)->rules;
+// 代码所执行的sql语句
+
+SELECT
+    rule.*, pivot.role_id AS pivot__role_id,
+    pivot.rule_id AS pivot__rule_id
+FROM
+    `rule`
+INNER JOIN role_rule pivot ON pivot.rule_id = rule.id
+WHERE
+    pivot.rule_id = 1
+
+这是 where 条件不应该是 role_id = 1 吗 ？？？
+
+另外不有一个
+
+$this->get(1)->rules()->where('islink', 1)->select();
+// 代码所执行的sql语句
+
+SELECT * FROM `rule` WHERE `islink` = 1

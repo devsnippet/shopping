@@ -13,7 +13,7 @@
 return [
     'url_route_on'   => true,
     'log'            => [
-        'type' => 'socket', // 支持 socket trace file
+        'type' => 'trace', // 支持 socket trace file
     ],
     'default_module' => 'admin',
 ];

@@ -63,10 +63,29 @@ $.extend({
      */
     ajaxDoneResult: function(result) {
         if (result.status == 1) {
+            if (typeof result.url == 'undefined') {
+                result.url = '/admin/index/index';
+            }
+
+            if(typeof result.data == 'undefined'){
+                result.data = '成功！';
+            }
+
+            $.messageSuccess(result.data);
+
+            setTimeout(function() {
+                    location.href = result.url;
+                },
+                1000);
+
 
         } else {
-            for (i in result.data) {
-                $.messageError(result.data[i]);
+            if (typeof result.data == 'string') {
+                $.messageError(result.data);
+            } else {
+                for (i in result.data) {
+                    $.messageError(result.data[i]);
+                }
             }
         }
 
@@ -82,10 +101,6 @@ $.extend({
         $.buttonEnable();
     },
 
-    _validateField: function (field) {
-         /* body... */ 
-    }
-
 });
 
 
@@ -94,14 +109,14 @@ $.fn.extend({
      * ajax提交
      * @return {[type]} [description]
      */
-    formLuffyZhao: function(fields,is_ajax) {
+    formLuffyZhao: function(fields, is_ajax) {
         var me = $(this);
 
-        if(typeof(is_ajax) == 'undefined'){
+        if (typeof(is_ajax) == 'undefined') {
             is_ajax = true;
         }
 
-        $(this).submit(function(event) {            
+        $(this).submit(function(event) {
             $.buttonObject = $(this).find('button[type="submit"]');
 
             var action = $(this).attr('action'),
@@ -136,16 +151,16 @@ $.fn.extend({
                     return false;
                 }
                 // event.preventDefault();
-                if(is_ajax == true){
+                if (is_ajax == true) {
                     event.preventDefault();
                     $.ajax({
-                        url: action,
-                        type: method,
-                        dataType: 'json',
-                        data: data,
-                    })
-                    .done($.ajaxDoneResult)
-                    .fail($.ajaxFailResult);
+                            url: action,
+                            type: method,
+                            dataType: 'json',
+                            data: data,
+                        })
+                        .done($.ajaxDoneResult)
+                        .fail($.ajaxFailResult);
                 }
                 // ajax提交                
             }

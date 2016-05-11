@@ -6,6 +6,7 @@ use \think\Session;
 
 class Role extends Model
 {
+    use \Tp5Tool\Auth\Traits\AuthRole;
 
     protected $autoTimeField = ['create_time', 'update_time'];
     protected $insert        = ['create_time', 'update_time'];
@@ -18,17 +19,6 @@ class Role extends Model
         'create_time' => 'datetime',
         'update_time' => 'datetime',
     ];
-
-    /**
-     * 关联菜单&权限表
-     * @author luffy<luffyzhao@vip.126.com>
-     * @dateTime 2016-04-21T16:27:30+0800
-     * @return   [type]                   [description]
-     */
-    public function rules()
-    {
-        return $this->belongsToMany('Rule', 'role_rule');
-    }
 
     /**
      * 获取登录用户的菜单

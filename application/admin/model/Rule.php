@@ -6,6 +6,8 @@ use think\Model;
 class Rule extends Model
 {
 
+    use \Tp5Tool\Auth\Traits\AuthRule;
+
     protected $type = [
         'id'        => 'integer',
         'parent_id' => 'integer',

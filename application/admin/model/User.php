@@ -6,6 +6,8 @@ use \think\Model;
 
 class User extends Model
 {
+    use \Tp5Tool\Auth\Traits\AuthUser;
+
     protected $autoTimeField = ['create_time', 'update_time'];
     protected $insert        = ['create_time', 'password', 'update_time'];
     protected $update        = ['update_time', 'password'];
@@ -76,17 +78,6 @@ class User extends Model
     {
         $status = [0 => '保密', 1 => '男', 2 => '女'];
         return $status[$value];
-    }
-
-    /**
-     * 关联角色
-     * @author luffy<luffyzhao@vip.126.com>
-     * @dateTime 2016-05-10T14:00:05+0800
-     * @return   [type]                   [description]
-     */
-    public function role()
-    {
-        return $this->belongsTo('role');
     }
 
     /**

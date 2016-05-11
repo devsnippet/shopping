@@ -17,7 +17,8 @@
     ],
     "require": {
         "php": ">=5.4.0",
-        "topthink/framework": "*"
+        "topthink/framework": "*",
+        "luffyzhao/tp5tool": "*"
     },
     "extra": {
         "think-path": "thinkphp"

@@ -21,7 +21,7 @@ class Base extends Controller
 
         if (strtolower(CONTROLLER_NAME) != self::NO_AUTH) {
             if (!Session::has('U.id')) {
-                echo 1;
+                $this->redirect('main/login');
                 exit;
             }
             $userId = Session::get('U.id');
@@ -33,7 +33,7 @@ class Base extends Controller
             $void = (new Auth($loginUserModel))->can([$name], true);
 
             if ($void === false) {
-                echo 2;
+                $this->error('没有操作权限');
                 exit;
             }
         }
